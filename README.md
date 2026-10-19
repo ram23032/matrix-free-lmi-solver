@@ -9,10 +9,10 @@ The constraints are not changed or approximated:
 
 The method only changes **how** the SDP is solved. Every result comes with:
 
-1. **An upper bound** $\gamma_{\rm UB}$, backed by matrices $P_j$ that are checked against every original constraint at full size.
-2. **A certified lower bound** $\gamma_{\rm LB}$ from weak duality.
+1. **An upper bound** $\gamma_{\mathrm{UB}}$, backed by matrices $P_j$ that are checked against every original constraint at full size.
+2. **A certified lower bound** $\gamma_{\mathrm{LB}}$ from weak duality.
 
-The true optimum always satisfies $\gamma_{\rm LB} \le \gamma^\star \le \gamma_{\rm UB}$. The run stops when the two agree to the requested accuracy (default relative gap $10^{-5}$, safely inside 4 significant figures).
+The true optimum always satisfies $\gamma_{\mathrm{LB}} \le \gamma^\star \le \gamma_{\mathrm{UB}}$. The run stops when the two agree to the requested accuracy (default relative gap $10^{-5}$, safely inside 4 significant figures).
 
 ---
 
@@ -44,7 +44,7 @@ P_j = I + U_j S_j U_j^{\mathsf H}, \qquad U_j \in \mathbb{C}^{n\times r_j},\; U_
 
 The columns of $U_j$ are the **directions** of $P_j$, and $r_j \ll n$ is the hope.
 
-Because $U_j$ is orthonormal and $P_j = I$ on the orthogonal complement of $\operatorname{range}(U_j)$, the box constraint reduces to a small one:
+Because $U_j$ is orthonormal and $P_j = I$ on the orthogonal complement of $\mathrm{range}(U_j)$, the box constraint reduces to a small one:
 
 ```math
 I \preceq P_j \preceq \gamma I \iff 0 \preceq S_j \preceq (\gamma - 1) I_{r_j}.
@@ -64,7 +64,7 @@ L_j(S) = \frac{U_{j+1}S_{j+1}U_{j+1}^{\mathsf H} - U_jS_jU_j^{\mathsf H}}{\Delta
 $M_j$ is still $n\times n$, but $L_j(S)$ only acts on a small subspace. Every term of $L_j$ has its column space, and by symmetry its row space, inside
 
 ```math
-\mathcal W_j = \operatorname{span}\big[\,U_j,\; U_{j+1},\; A_j^{\mathsf H}U_j,\; V_j^{+}\,\big],
+\mathcal W_j = \mathrm{span}\,\big[\,U_j,\; U_{j+1},\; A_j^{\mathsf H}U_j,\; V_j^{+}\,\big],
 ```
 
 where $V_j^{+}$ holds the eigenvectors of $H_j$ with positive eigenvalues. Let $W_j$ be an orthonormal basis of $\mathcal W_j$ (size $n\times m_j$) and $Q_j$ an orthonormal basis of its complement. Then $L_j Q_j = 0$, and in the basis $[W_j\;Q_j]$:
@@ -119,11 +119,11 @@ Two implementation details:
 - **Real form.** MOSEK works with real matrices, and YALMIP does not return MOSEK's duals for complex constraints. Each Hermitian constraint $X \succeq 0$ is therefore passed in the equivalent real form
 
   ```math
-  \begin{bmatrix}\operatorname{Re}X & -\operatorname{Im}X\\ \operatorname{Im}X & \operatorname{Re}X\end{bmatrix}\succeq 0 .
+  \begin{bmatrix}\mathrm{Re}\,X & -\mathrm{Im}\,X\\ \mathrm{Im}\,X & \mathrm{Re}\,X\end{bmatrix}\succeq 0 .
   ```
 
-  If $`Z = \begin{bmatrix}Z_{11}&Z_{12}\\Z_{21}&Z_{22}\end{bmatrix}`$ is the dual of that real constraint, the complex dual is $Y = (Z_{11}+Z_{22}) + i\,(Z_{21}-Z_{12})$. It satisfies $\langle Z,\operatorname{emb}(M)\rangle = \operatorname{Re}\operatorname{tr}(YM)$ for every Hermitian $M$.
-- **Numeric assembly.** Each $S_j$ is expanded in a basis of Hermitian matrices, $S_j=\sum_k x_k E_k$. Every constraint is precomputed as a constant plus a numeric matrix times $x$, using $\operatorname{vec}(BEC^{\mathsf H}) = (\overline{C}\otimes B)\operatorname{vec}(E)$. This avoids YALMIP's slow symbolic matrix products.
+  If $`Z = \begin{bmatrix}Z_{11}&Z_{12}\\Z_{21}&Z_{22}\end{bmatrix}`$ is the dual of that real constraint, the complex dual is $Y = (Z_{11}+Z_{22}) + i\,(Z_{21}-Z_{12})$. It satisfies $\langle Z,\mathrm{emb}(M)\rangle = \mathrm{Re}\,\mathrm{tr}(YM)$ for every Hermitian $M$.
+- **Numeric assembly.** Each $S_j$ is expanded in a basis of Hermitian matrices, $S_j=\sum_k x_k E_k$. Every constraint is precomputed as a constant plus a numeric matrix times $x$, using $\mathrm{vec}(BEC^{\mathsf H}) = (\overline{C}\otimes B)\mathrm{vec}(E)$. This avoids YALMIP's slow symbolic matrix products.
 
 ---
 
@@ -135,10 +135,10 @@ Attach multipliers $\Omega_j \succeq 0$ to $P_j \preceq \gamma I$, $\Lambda_j\su
 
 ```math
 \mathcal L = \gamma + \sum_{j=1}^{K}\langle \Omega_j,\,P_j-\gamma I\rangle + \sum_{j=1}^{K}\langle\Lambda_j,\,I-P_j\rangle + \sum_{j=1}^{K-1}\langle Y_j,\,M_j(P)\rangle,
-\qquad \langle X,Y\rangle = \operatorname{tr}(XY).
+\qquad \langle X,Y\rangle = \mathrm{tr}(XY).
 ```
 
-Setting the derivative with respect to $\gamma$ to zero gives $\sum_j \operatorname{tr}\Omega_j = 1$.
+Setting the derivative with respect to $\gamma$ to zero gives $\sum_j \mathrm{tr}\,\Omega_j = 1$.
 
 Collecting the coefficient of each $P_j$ (with $\langle Y_j, A_j^{\mathsf H}P_j + P_jA_j\rangle = \langle A_jY_j + Y_jA_j^{\mathsf H},\,P_j\rangle$) gives the stationarity condition
 
@@ -147,10 +147,10 @@ Collecting the coefficient of each $P_j$ (with $\langle Y_j, A_j^{\mathsf H}P_j 
 \qquad (Y_0 = 0,\; Y_K = 0).
 ```
 
-When both conditions hold, every $P_j$ and $\gamma$ term cancels, and the dual objective is $\sum_j \operatorname{tr}\Lambda_j$. **Weak duality:** for any multipliers that satisfy these conditions with $\Omega_j, Y_j, \Lambda_j \succeq 0$,
+When both conditions hold, every $P_j$ and $\gamma$ term cancels, and the dual objective is $\sum_j \mathrm{tr}\,\Lambda_j$. **Weak duality:** for any multipliers that satisfy these conditions with $\Omega_j, Y_j, \Lambda_j \succeq 0$,
 
 ```math
-\sum_{j=1}^{K}\operatorname{tr}\Lambda_j \;\le\; \gamma^\star .
+\sum_{j=1}^{K}\mathrm{tr}\,\Lambda_j \;\le\; \gamma^\star .
 ```
 
 ### 5.2 Lifting the restricted duals
@@ -171,7 +171,7 @@ $\Lambda_j$ is then **defined** by the boxed stationarity equation, so stationar
 
 ### 5.3 Pricing: choosing new directions
 
-On $\operatorname{range}(U_j)$, $\Lambda_j$ matches the multiplier of $S_j\succeq 0$, which the solver keeps PSD. Negative eigenvalues of $\Lambda_j$ can therefore only appear **outside** the current directions.
+On $\mathrm{range}(U_j)$, $\Lambda_j$ matches the multiplier of $S_j\succeq 0$, which the solver keeps PSD. Negative eigenvalues of $\Lambda_j$ can therefore only appear **outside** the current directions.
 
 The restricted problem implicitly fixes $P_j = I$ on that complement. A negative eigenvalue $\lambda<0$ of $\Lambda_j$ with eigenvector $v$ means this hidden constraint is pushing the wrong way. Letting $P_j$ grow along $v v^{\mathsf H}$ changes the Lagrangian at the first-order rate $\lambda < 0$, so adding $v$ **could lower** $\gamma$. This is the SDP version of a negative reduced cost in linear-programming column generation.
 
@@ -179,9 +179,9 @@ Each round, for every $j$:
 
 1. compute the eigen-decomposition of $\Lambda_j$;
 2. take the eigenvectors of the most negative eigenvalues, up to `addmax` (default 2) per time step, ignoring eigenvalues above $-10^{-7}\max|\lambda|$;
-3. set $U_j \leftarrow \operatorname{orth}\,[\,U_j,\;v_1,\dots\,]$ and solve the restricted SDP again.
+3. set $U_j \leftarrow \mathrm{orth}\,\,[\,U_j,\;v_1,\dots\,]$ and solve the restricted SDP again.
 
-**Why stopping certifies the answer.** If no $\Lambda_j$ has a negative eigenvalue, the lifted multipliers are feasible for the full dual. Then $\sum_j\operatorname{tr}\Lambda_j = \gamma_{\rm LB}$ is a valid lower bound that equals the restricted optimum $\gamma_{\rm UB}$ (by strong duality of the restricted SDP). No direction anywhere in $\mathbb{C}^n$ can lower $\gamma$, so $\gamma_{\rm UB}$ is the optimum of Eq. (24).
+**Why stopping certifies the answer.** If no $\Lambda_j$ has a negative eigenvalue, the lifted multipliers are feasible for the full dual. Then $\sum_j\mathrm{tr}\,\Lambda_j = \gamma_{\mathrm{LB}}$ is a valid lower bound that equals the restricted optimum $\gamma_{\mathrm{UB}}$ (by strong duality of the restricted SDP). No direction anywhere in $\mathbb{C}^n$ can lower $\gamma$, so $\gamma_{\mathrm{UB}}$ is the optimum of Eq. (24).
 
 ### 5.4 A lower bound that stays rigorous with an inexact solver
 
@@ -190,15 +190,15 @@ Solvers satisfy the dual conditions only approximately. Each round, the code tur
 1. Project $y_j$ and $\omega_j$ onto the PSD cone (drop round-off negative eigenvalues), so $Y_j,\Omega_j\succeq 0$.
 2. Define $\Lambda_j$ by the stationarity equation, so stationarity in $P$ holds exactly.
 3. Split $\Lambda_j = \Lambda_j^{+} - \Lambda_j^{-}$ into positive and negative parts. Move $\Lambda_j^{-}$ into the upper-box multiplier: $\Omega_j' = \Omega_j + \Lambda_j^{-}$, $\Lambda_j' = \Lambda_j^{+}\succeq 0$. Stationarity still holds.
-4. Rescale every multiplier by $c = \sum_j \operatorname{tr}\Omega_j'$ so that $\sum_j\operatorname{tr}\Omega_j = 1$ holds exactly.
+4. Rescale every multiplier by $c = \sum_j \mathrm{tr}\,\Omega_j'$ so that $\sum_j\mathrm{tr}\,\Omega_j = 1$ holds exactly.
 
 This gives the bound printed as `certified LB`:
 
 ```math
-\gamma_{\rm LB} \;=\; \frac{\sum_j \operatorname{tr}\Lambda_j^{+}}{\sum_j \operatorname{tr}\Omega_j + \sum_j\operatorname{tr}\Lambda_j^{-}} \;\le\; \gamma^\star .
+\gamma_{\mathrm{LB}} \;=\; \frac{\sum_j \mathrm{tr}\,\Lambda_j^{+}}{\sum_j \mathrm{tr}\,\Omega_j + \sum_j\mathrm{tr}\,\Lambda_j^{-}} \;\le\; \gamma^\star .
 ```
 
-It is valid in every round, not only at convergence. While directions are still missing it is weak, because $\Lambda^{-}$ is large. It rises to meet $\gamma_{\rm UB}$ as pricing removes the negative eigenvalues.
+It is valid in every round, not only at convergence. While directions are still missing it is weak, because $\Lambda^{-}$ is large. It rises to meet $\gamma_{\mathrm{UB}}$ as pricing removes the negative eigenvalues.
 
 ---
 
@@ -257,7 +257,7 @@ it  6: gamma = 85.662450 [valid UB, max slack -5.7e-10] | certified LB = 85.6620
 | `max slack` | Largest $s_j$. About 0 (to solver tolerance) means every original constraint is met. |
 | `certified LB` | The rigorous lower bound of §5.4. |
 | `min eig Lambda` | Most negative eigenvalue over all $\Lambda_j$. It reaches about 0 at the optimum. |
-| `gap` | $(\gamma_{\rm UB}-\gamma_{\rm LB})/\gamma_{\rm UB}$. |
+| `gap` | $(\gamma_{\mathrm{UB}}-\gamma_{\mathrm{LB}})/\gamma_{\mathrm{UB}}$. |
 | `ranks a-b` | Smallest and largest number of directions $r_j$. |
 | `+k dirs` | Directions added by pricing this round. |
 | `time this round` | Where the time went. |
@@ -268,7 +268,7 @@ it  6: gamma = 85.662450 [valid UB, max slack -5.7e-10] | certified LB = 85.6620
 
 Settings: $k_x = 1.2$, $k_z=0$, $Re = 500$, $\kappa = 0.1$, decelerating flow, $t_0 = 0$, $T=30$, $\Delta t=1$ ($K=30$), unless noted.
 
-| $N$ | $n$ | Direct full-LMI solve | Column generation $\gamma_{\rm UB}$ | Certified $\gamma_{\rm LB}$ | Rounds | Max $r_j$ | Time |
+| $N$ | $n$ | Direct full-LMI solve | Column generation $\gamma_{\mathrm{UB}}$ | Certified $\gamma_{\mathrm{LB}}$ | Rounds | Max $r_j$ | Time |
 |---|---|---|---|---|---|---|---|
 | 6 ($T=8$) | 8 | 30.557725 (Clarabel) | 30.557742 | 30.557689 | 2 | 4 | 12 s (SeDuMi) |
 | 12 | 20 | 85.6635 (MOSEK) | **85.662450** | **85.662013** | 6 | 10 | 13.8 s (MOSEK) |
