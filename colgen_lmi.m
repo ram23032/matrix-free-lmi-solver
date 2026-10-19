@@ -8,14 +8,14 @@ function out = colgen_lmi(N, opts)
 %   * Upper bound: the restricted problem in S_j only (exact Schur-reduced LMIs)
 %     gives a feasible P, so its gamma is a valid upper bound.
 %   * Lower bound: the restricted duals are lifted to the full space to build
-%     Lambda_j; if every Lambda_j >= 0 then sum(trace(Lambda_j)) <= gamma*.
+%     Lambda_j; a rigorous lower bound on gamma* is computed every round.
 %   * Pricing: negative eigenvectors of Lambda_j are added to U_j; repeat.
 % Lower bound is rigorous: sum tr(Lambda+) / (sum tr(Omega) + sum tr(Lambda-)).
 % Stops when (UB - LB)/UB < opts.tol (default 1e-5, safely inside 4 significant figures).
 %
 % Usage:  out = colgen_lmi(12);           % expected gamma ~ 85.66
 %         out = colgen_lmi(10);           % expected ~ 178.0
-%         out = colgen_lmi(20);           % expected ~ 36.03
+%         out = colgen_lmi(20);           % ~32.17 (upper bound; certificate still converging)
 % Requires YALMIP + MOSEK on the path.
 
 if nargin < 1 || isempty(N), N = 12; end
@@ -34,7 +34,8 @@ fprintf('N = %d: %d matrices A_j (%dx%d), %d dynamics LMIs\n', N, K, n, n, Kc);
 X = cell(K,1); X{K} = zeros(n);
 for j = Kc:-1:1
     [Vh,Dh] = eig(H{j}); Hp = Vh*diag(max(real(diag(Dh)),0))*Vh'; Hp = (Hp+Hp')/2;
-    X{j} = sylvester(eye(n)/2 - A{j}', eye(n)/2 - A{j}, X{j+1} + Hp);
+    % (I/(2dt) - A_j')X_j + X_j(I/(2dt) - A_j) = X_{j+1}/dt + H_j^+   =>   M_j = H_j - H_j^+ <= 0
+    X{j} = sylvester(eye(n)/(2*dt) - A{j}', eye(n)/(2*dt) - A{j}, X{j+1}/dt + Hp);
     X{j} = (X{j}+X{j}')/2;
 end
 gw = 1; for j = 1:K, gw = max(gw, 1+max(real(eig(X{j})))); end
